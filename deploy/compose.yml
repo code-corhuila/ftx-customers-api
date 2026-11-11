@@ -1,0 +1,37 @@
+# ftx-customers-api container (Annex J.7).
+#
+# This repository does NOT define a database: the single PostgreSQL instance lives in
+# ftx-infra-postgres, which includes this file:
+#
+#   include:
+#     - path: ../ftx-customers-api/deploy/compose.yml
+#
+# Operation, from ftx-infra-postgres (the instance must be up and ftx-customers-db migrated first):
+#   docker compose --env-file env/dev.env up -d --build --wait ftx-customers-api
+services:
+  ftx-customers-api:
+    build: ..                               # this repository's Dockerfile
+    image: ftx-customers-api:local
+    restart: unless-stopped
+    environment:
+      # "postgres" is the service name of the single instance in the platform network.
+      CUSTOMERS_DB_URL: jdbc:postgresql://postgres:5432/${PG_DATABASE:?set PG_DATABASE in the env file of ftx-infra-postgres}
+      CUSTOMERS_DB_USER: customers_app
+      CUSTOMERS_DB_PASSWORD: ${CUSTOMERS_APP_PASSWORD:?set CUSTOMERS_APP_PASSWORD in the env file of ftx-infra-postgres}
+      # RSA private key (PKCS#8, one line without the BEGIN/END lines) and its key id. See the README.
+      CUSTOMERS_JWT_PRIVATE_KEY: ${CUSTOMERS_JWT_PRIVATE_KEY:?set CUSTOMERS_JWT_PRIVATE_KEY in the env file of ftx-infra-postgres}
+      CUSTOMERS_JWT_KEY_ID: ${CUSTOMERS_JWT_KEY_ID:?set CUSTOMERS_JWT_KEY_ID in the env file of ftx-infra-postgres}
+      # First administrator: all three or none. A BCrypt hash, never a password.
+      CUSTOMERS_BOOTSTRAP_ADMIN_NAME: ${CUSTOMERS_BOOTSTRAP_ADMIN_NAME:-}
+      CUSTOMERS_BOOTSTRAP_ADMIN_EMAIL: ${CUSTOMERS_BOOTSTRAP_ADMIN_EMAIL:-}
+      CUSTOMERS_BOOTSTRAP_ADMIN_PASSWORD_HASH: ${CUSTOMERS_BOOTSTRAP_ADMIN_PASSWORD_HASH:-}
+    ports:
+      - "${CUSTOMERS_API_PORT:-8081}:8081"
+    networks: [platform]
+
+networks:
+  platform:
+    # One network per environment (PLATFORM_NETWORK in the env file of ftx-infra-postgres), so the
+    # names postgres and ftx-*-api never resolve to a container of another environment.
+    name: ${PLATFORM_NETWORK:-platform}
+    external: true
