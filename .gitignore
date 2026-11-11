@@ -1,0 +1,12 @@
+target/
+.idea/
+*.iml
+.vscode/
+.env
+*.env
+!*.env.example
+*.log
+# Signing keys are never versioned: they come from the environment.
+*.pem
+*.key
+keys/
