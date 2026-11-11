@@ -20,7 +20,8 @@ import org.junit.jupiter.api.Test;
 /** HU-ADM-002 AC1 and AC3, and the refresh-token rules of security-policy.md. */
 class AuthServiceTest {
 
-    static final String PASSWORD = "correct-horse-battery";
+    /** Made on each run: no fixed credential in the repository. */
+    static final String PASSWORD = "pw-" + UUID.randomUUID();
     static final String IP = "10.0.0.7";
 
     InMemoryStores.Administrators administrators;

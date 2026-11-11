@@ -27,7 +27,7 @@ class AdministratorBootstrapTest {
     @Test
     void neverChangesAnExistingAccount() {
         bootstrap.ensure("Facility Admin", "admin@example.test", hash12);
-        String other = new BCryptPasswordEncoder(12).encode("another");
+        String other = new BCryptPasswordEncoder(12).encode(java.util.UUID.randomUUID().toString());
 
         assertThat(bootstrap.ensure("Someone Else", "admin@example.test", other)).isFalse();
         assertThat(administrators.findByEmail("admin@example.test").orElseThrow().passwordHash()).isEqualTo(hash12);
